@@ -1,15 +1,15 @@
-# GNAP HttpSig: Client-keyed requests with HTTP Message Signatures
+# HttpSig: Client-keyed requests with HTTP Message Signatures
 
 ## What this repo teaches
 
-This project shows a practical, end-to-end “proof-of-possession” (PoP) flow for GNAP using **HTTP Message Signatures**:
+This project shows a practical, end-to-end “proof-of-possession” (PoP) flow using **HTTP Message Signatures**:
 
 * The **client generates a key** and proves possession by signing requests.
 * The **Authorization Server (AS)** binds the issued access token to that key.
 * The **Resource Server (RS)** verifies each request by checking the signature against the **bound** key, not whatever key happens to be in the request.
 * Optional: **key rotation** and re-binding.
 
-HTTP Message Signatures are a general tool for authenticated, integrity-protected HTTP traffic. They are not GNAP-only. An application or profile decides which parts of a message must be signed, how keys are discovered, and which algs are allowed. GNAP is such a profile that leans on this mechanism for PoP by default.
+HTTP Message Signatures are a general tool for authenticated, integrity-protected HTTP traffic. An application or profile decides which parts of a message must be signed, how keys are discovered, and which algs are allowed. 
 
 ## Why it matters for real systems
 
@@ -32,7 +32,7 @@ HTTP Message Signatures are a general tool for authenticated, integrity-protecte
 
 ## How this relates to OAuth
 
-PoP is not exclusive to GNAP. It is a broader idea. HTTP Message Signatures are a general mechanism that any application profile can use. Many OAuth deployments still rely on bearer tokens, but OAuth can adopt PoP profiles too. GNAP simply centers PoP and specifies how to apply HTTP Message Signatures to achieve it.
+HTTP Message Signatures are a general mechanism that any application profile can use. Many OAuth deployments still rely on bearer tokens, but OAuth can adopt PoP profiles too.
 
 ## Key implementation notes
 
