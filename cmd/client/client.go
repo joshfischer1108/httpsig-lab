@@ -44,6 +44,7 @@ func main() {
 	pub1, priv1, _ := ed25519.GenerateKey(rand.Reader)
 	jwk1 := toJWK("client-key-1", pub1)
 
+	//fmt.Printf("JWK kid=%s alg=%s x=%s\n", jwk1.Kid, jwk1.Alg, jwk1.X)
 	// 2) Initial GNAP grant to AS with httpsig proof
 	token := doGrant("http://localhost:8081/gnap/tx", priv1, jwk1)
 
@@ -78,6 +79,9 @@ func doGrant(url string, priv ed25519.PrivateKey, jwk JWK) string {
 
 	base := fmt.Sprintf("\"@method\": %s\n\"@target-uri\": %s\n\"content-digest\": %s\n\"@signature-params\": %s%s",
 		req.Method, url, cd, covered, params)
+	//fmt.Println("----- SIGNATURE BASE (AS Call) -----")
+	//fmt.Println(base)
+	//fmt.Println("----- END BASE -----")
 	sig := ed25519.Sign(priv, []byte(base))
 	req.Header.Set("Signature", "sig1=:"+base64.StdEncoding.EncodeToString(sig)+":")
 
@@ -102,6 +106,9 @@ func callRS(url string, priv ed25519.PrivateKey, jwk JWK, token string) {
 	req.Header.Set("Content-Type", "application/json")
 	cd := contentDigestSHA256(body)
 	req.Header.Set("Content-Digest", cd)
+	//TEMP: tamper the body AFTER computing the digest to trigger a server rejection
+	//body = []byte(`{”hello”:”tampered”}`)
+	//req.Body = io.NopCloser(bytes.NewReader(body))
 	req.Header.Set("Authorization", "GNAP "+token)
 
 	covered := `("@method" "@target-uri" "content-digest" "authorization")`
@@ -109,9 +116,12 @@ func callRS(url string, priv ed25519.PrivateKey, jwk JWK, token string) {
 	nonce := randB64(16)
 	params := fmt.Sprintf(`;created=%s;keyid="%s";nonce="%s";tag="gnap"`, created, jwk.Kid, nonce)
 	req.Header.Set("Signature-Input", "sig1="+covered+params)
-
+	//fmt.Println("Signature-Input:", req.Header.Get("Signature-Input"))
 	base := fmt.Sprintf("\"@method\": %s\n\"@target-uri\": %s\n\"content-digest\": %s\n\"authorization\": %s\n\"@signature-params\": %s%s",
 		req.Method, url, cd, "GNAP "+token, covered, params)
+	//fmt.Println("----- SIGNATURE BASE (RS Call) -----")
+	//fmt.Println(base)
+	//fmt.Println("----- END BASE -----")
 	sig := ed25519.Sign(priv, []byte(base))
 	req.Header.Set("Signature", "sig1=:"+base64.StdEncoding.EncodeToString(sig)+":")
 
